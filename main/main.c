@@ -56,10 +56,11 @@
 #define Nch 7 // 7 // Nwin是滑窗大小，这里先写上。Nch是通道数量。
 
 /* 需要自己设置远程IP地址 */
-#define IP_ADDR "192.168.1.100"
+#define IP_ADDR "192.168.1.101"
+#define DEVICE_TYPE "L"
 
 #define LWIP_DEMO_RX_BUFSIZE 200                     /* 最大接收数据长度 */
-#define LWIP_DEMO_PORT 8081                          /* 连接的本地端口号 */
+#define LWIP_DEMO_PORT 30810                         /* 连接的本地端口号 */
 #define LWIP_SEND_THREAD_PRIO (tskIDLE_PRIORITY + 3) /* 发送数据线程优先级 */
 #define LWIP_SEND_DATA 0X80                          /* 定义有数据发送 */
 
@@ -291,13 +292,13 @@ static void adc_process_task(void *pvParameters)
             }
 
             // 发送数据到server
-            sprintf(g_lwip_sendbuf, "%d:%d:%f  %ld %ld %ld %ld %ld %ld\r\n", W_h, W_m, W_s, senddata[0], senddata[1], senddata[2], senddata[3], senddata[4], senddata[5]);
+            sprintf(g_lwip_sendbuf, "%s#%d:%d:%f  %ld %ld %ld %ld %ld %ld\r\n", DEVICE_TYPE, W_h, W_m, W_s, senddata[0], senddata[1], senddata[2], senddata[3], senddata[4], senddata[5]);
             // printf("%d:%d:%f  %ld %ld %ld %ld %ld %ld\r\n", W_h,W_m,W_s,senddata[0],senddata[1],senddata[2],senddata[3],senddata[4],senddata[5]);
             err_send = send(g_sock, &g_lwip_sendbuf, sizeof(g_lwip_sendbuf), 0);
-
+            // ESP_LOGW("main", "send, errcode: %d", err_send);
             if (err_send < 0 && err_send != -56) // 这个如果想要确定恢复的话用while，但经过实验发现其实可以自动恢复连接！！！
             {
-                ESP_LOGW("main", "send, errcode: %d", err_send);
+
                 lcd_show_string(10, 210, 200, 16, 16, "发送到服务端错误", BLUE);
                 lwip_demo();
             }
